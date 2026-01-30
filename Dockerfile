@@ -1,6 +1,6 @@
 FROM alpine:3.19
 
-RUN apk add --no-cache ffmpeg python3 py3-pip && \
+RUN apk add --no-cache ffmpeg python3 py3-pip font-dejavu && \
     pip3 install --no-cache-dir --break-system-packages yt-dlp
 
 WORKDIR /app

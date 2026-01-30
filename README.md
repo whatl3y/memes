@@ -6,7 +6,9 @@ Create meme videos by combining video or static images with audio. Runs entirely
 
 - **Video + Audio** — Merge any video file with a separate audio track
 - **Image + Audio** — Turn a static image (PNG, JPEG, BMP, TIFF, WebP) into a video with audio
+- **Tweet + Audio** — Download a video from a Twitter/X post and use it as input
 - **Animated GIF + Audio** — Use animated GIFs as video input, preserving their animation
+- **Meme captions** — Add top and/or bottom text overlays in classic meme style
 - **Video/GIF looping** — Automatically loops short videos or GIFs to fill the specified duration
 - **Audio looping** — Loop short audio clips to match the video length
 - **Custom duration** — Trim or extend output to an exact length in seconds
@@ -121,6 +123,61 @@ docker run --rm \
 
 This creates a 15-second video of the static image with the first
 15 seconds of the audio.
+
+### Tweet + Audio
+
+Download the embedded video from a Twitter/X post and combine it with
+an audio track. Uses `yt-dlp` under the hood.
+
+```sh
+docker run --rm \
+  -v /absolute/path/to/inputs:/input:ro \
+  -v /absolute/path/to/output:/output \
+  meme-maker \
+  --tweet "https://x.com/user/status/1234567890" \
+  --audio /input/song.mp3
+```
+
+The `--tweet` flag is mutually exclusive with `--input` — use one or
+the other. All other options (`--duration`, `--loop-audio`,
+`--top-text`, `--bottom-text`, etc.) work with `--tweet` too.
+
+#### Tweet with original audio, trimmed, and captioned
+
+Download a tweet video, trim to a specific time range, keep the
+original audio, and add a caption — all in one command:
+
+```sh
+docker run --rm \
+  -v /absolute/path/to/output:/output \
+  meme-maker \
+  --tweet "https://x.com/user/status/1234567890" \
+  --start 00:01:27 \
+  --end 00:01:47 \
+  --top-text "WHEN AGI TAKES OVER"
+```
+
+When `--audio` is omitted, the original video audio is preserved.
+
+### Meme captions
+
+Add classic meme-style text (white with black outline) to the top
+and/or bottom of the video.
+
+```sh
+docker run --rm \
+  -v /absolute/path/to/inputs:/input:ro \
+  -v /absolute/path/to/output:/output \
+  meme-maker \
+  --input /input/clip.mp4 \
+  --audio /input/song.mp3 \
+  --top-text "WHEN THE CODE COMPILES" \
+  --bottom-text "ON THE FIRST TRY"
+```
+
+You can use just `--top-text`, just `--bottom-text`, or both. The
+font size scales automatically with the video resolution. Special
+characters (colons, apostrophes, semicolons) are escaped automatically.
 
 ### Full example (end to end)
 
@@ -237,11 +294,19 @@ docker run --rm \
 
 | Flag | Required | Description |
 |------|----------|-------------|
-| `--input` | Yes | Path to video or image file (inside the container, e.g. `/input/file.mp4`) |
-| `--audio` | Yes | Path to audio file (inside the container, e.g. `/input/audio.mp3`) |
+| `--input` | Yes* | Path to video or image file (inside the container, e.g. `/input/file.mp4`) |
+| `--tweet` | Yes* | URL of a Twitter/X post with an embedded video (alternative to `--input`) |
+| `--audio` | No** | Path to audio file. Omit to keep original video audio |
 | `--output` | No | Output path (default: `/output/meme.mp4`) |
+| `--top-text` | No | Text to display at the top of the video (white with black outline) |
+| `--bottom-text` | No | Text to display at the bottom of the video (white with black outline) |
+| `--start` | No | Start time for input video trimming (e.g. `00:01:30` or `90`) |
+| `--end` | No | End time for input video trimming (e.g. `00:02:15` or `135`) |
 | `--duration` | No | Duration in seconds. Defaults to the video length or audio length (for images) |
 | `--loop-audio` | No | Loop the audio track if it is shorter than the video |
+
+\* Either `--input` or `--tweet` is required, but not both.
+\*\* Required when using a static image as input. Optional for video inputs (omit to keep original audio).
 
 ### download-audio.sh (via `--entrypoint`)
 
