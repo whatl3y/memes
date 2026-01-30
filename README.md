@@ -259,3 +259,7 @@ All output is MP4 with:
 - **Video**: H.264, yuv420p pixel format, CRF 23
 - **Audio**: AAC at 192 kbps
 - **`faststart`** flag enabled for quick playback on social media
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
